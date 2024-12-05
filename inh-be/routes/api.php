@@ -24,6 +24,7 @@ Route::get('/news', [NewsController::class, 'index']);
 Route::get('/news/{news}', [NewsController::class, 'show']);
 
 // Rute POST, PUT, DELETE (memerlukan autentikasi)
+
     Route::post('/campaign', [CampaignController::class, 'store']);
     Route::put('/campaign/{campaign}', [CampaignController::class, 'update']);
     Route::delete('/campaign/{campaign}', [CampaignController::class, 'destroy']);
@@ -39,7 +40,8 @@ Route::get('/news/{news}', [NewsController::class, 'show']);
     Route::post('/news', [NewsController::class, 'store']);
     Route::put('/news/{news}', [NewsController::class, 'update']);
     Route::delete('/news/{news}', [NewsController::class, 'destroy']);
-    
+
+
 // Rute untuk login dan register (terbuka tanpa autentikasi)
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);

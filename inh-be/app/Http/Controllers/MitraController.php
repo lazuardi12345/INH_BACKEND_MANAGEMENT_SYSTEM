@@ -11,12 +11,12 @@ class MitraController extends Controller
     
     public function index()
 {
-    $mitras = Mitra::all()->map(function ($mitra) {
-        $mitra->image = $mitra->image ? asset('storage/' . $mitra->image) : null;
-        return $mitra;
-    });
+    $mitra = mitra::all();
 
-    return response()->json($mitras, 200);
+    return response()->json([
+        'data' => $mitra,  
+        'message' => 'Data mitra fetched successfully', 
+    ], 200);
 }
 
     // Menyimpan mitra baru
