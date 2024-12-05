@@ -11,10 +11,17 @@ class LembagaKerjasamaController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
-        $lembagaKerjasama = LembagaKerjasama::all();
-        return response()->json($lembagaKerjasama);
-    }
+{
+    // Mengambil semua data lembaga kerjasama
+    $lembagaKerjasama = LembagaKerjasama::all();
+
+    // Mengembalikan data dalam bentuk JSON dengan status 200
+    return response()->json([
+        'data' => $lembagaKerjasama,
+        'message' => 'Lembaga Kerjasama retrieved successfully',
+    ], 200);
+}
+
 
     /**
      * Store a newly created resource in storage.

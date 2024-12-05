@@ -8,12 +8,16 @@ use Illuminate\Support\Facades\Storage;
 
 class MitraController extends Controller
 {
-    // Menampilkan semua mitra
+    
     public function index()
-    {
-        $mitras = Mitra::all();
-        return response()->json($mitras, 200);
-    }
+{
+    $mitras = Mitra::all()->map(function ($mitra) {
+        $mitra->image = $mitra->image ? asset('storage/' . $mitra->image) : null;
+        return $mitra;
+    });
+
+    return response()->json($mitras, 200);
+}
 
     // Menyimpan mitra baru
     public function store(Request $request)

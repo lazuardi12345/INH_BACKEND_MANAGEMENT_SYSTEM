@@ -8,12 +8,17 @@ use Illuminate\Support\Facades\Storage;
 
 class CampaignController extends Controller
 {
-    // Menampilkan semua campaign
     public function index()
-    {
-        $campaigns = Campaign::all();
-        return response()->json($campaigns, 200);
-    }
+{
+    // Mengambil semua data campaign
+    $campaigns = Campaign::all();
+
+    return response()->json([
+        'data' => $campaigns,
+        'message' => 'Campaigns retrieved successfully',
+    ], 200);
+}
+
 
     // Menyimpan campaign baru
     public function store(Request $request)
