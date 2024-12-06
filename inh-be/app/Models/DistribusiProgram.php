@@ -5,13 +5,23 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Campaign extends Model
+class DistribusiProgram extends Model
 {
     use HasFactory;
 
-    protected $table = 'campaigns'; // Pastikan nama tabel
-    protected $fillable = ['image', 'title', 'deskripsi']; // Kolom yang bisa diisi
+    protected $table = 'distribusi-program';
 
+    protected $fillable = [
+        'title',
+        'deskripsi',
+        'image',
+        'author',
+    ];
+
+    /**
+     * Accessor untuk atribut 'image'
+     * Mengembalikan URL lengkap gambar jika ada
+     */
     public function getImageAttribute($value)
     {
         // Jika gambar ada, tambahkan URL storage lengkap

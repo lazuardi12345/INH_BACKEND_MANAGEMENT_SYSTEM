@@ -25,7 +25,7 @@ class CampaignController extends Controller
     {
         // Validasi input
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'title' => 'required|string|max:255',
             'deskripsi' => 'required|string',
             'image' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
@@ -35,7 +35,7 @@ class CampaignController extends Controller
 
         // Simpan data ke database
         $campaign = Campaign::create([
-            'name' => $validated['name'],
+            'title' => $validated['title'],
             'deskripsi' => $validated['deskripsi'],
             'image' => $imagePath,
         ]);
@@ -71,7 +71,7 @@ class CampaignController extends Controller
     
         // Validasi input
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'title' => 'required|string|max:255',
             'deskripsi' => 'required|string',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048', // 'nullable' jika tidak ada gambar baru
         ]);
@@ -90,7 +90,7 @@ class CampaignController extends Controller
     
         // Perbarui data lainnya
         $campaign->update([
-            'name' => $validated['name'],
+            'title' => $validated['title'],
             'deskripsi' => $validated['deskripsi'],
         ]);
     

@@ -10,23 +10,19 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up()
-{
-    Schema::create('news', function (Blueprint $table) {
-        $table->id();
-        $table->string('image');
-        $table->string('title');
-        $table->text('deskripsi');
-        $table->text('author');
-        $table->timestamps();
-    });
-}
-
+    {
+        Schema::create('kategory', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 100); // Nama kategori
+            $table->timestamps(); // Kolom created_at dan updated_at
+        });
+    }
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('news');
+        Schema::dropIfExists('kategory');
     }
 };

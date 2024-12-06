@@ -6,19 +6,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
-        Schema::create('campaigns', function (Blueprint $table) { // Gunakan nama jamak
+        Schema::create('pengumuman', function (Blueprint $table) {
             $table->id();
             $table->string('image');
-            $table->string('title');
-            $table->text('deskripsi');
             $table->timestamps();
         });
     }
 
-    public function down()
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
-        Schema::dropIfExists('campaigns');
+        Schema::dropIfExists('pengumuman');
     }
 };

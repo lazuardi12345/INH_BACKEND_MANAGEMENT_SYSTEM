@@ -8,46 +8,46 @@ use Illuminate\Support\Facades\Storage;
 
 class NewsController extends Controller
 {
+    // Menampilkan semua berita
     public function index()
-{
-    // Ambil semua data news
-    $news = News::all();
+    {
+        $news = News::all();
 
-    // Kembalikan respons dalam format JSON dengan status 200
-    return response()->json([
-        'data' => $news,  // Mengembalikan data berita
-        'message' => 'Data news fetched successfully', // Pesan status
-    ], 200);
-}
-
+        return response()->json([
+            'data' => $news,
+            'message' => 'Data news fetched successfully',
+        ], 200);
+    }
 
     // Menyimpan berita baru
     public function store(Request $request)
     {
         // Validasi input
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'title' => 'required|string|max:255',
             'image' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048',
             'deskripsi' => 'required|string',
+            'author' => 'required|string|max:255',
         ]);
-    
+
         // Simpan file gambar ke penyimpanan publik
         $imagePath = $request->file('image')->store('news_images', 'public');
-    
+
         // Simpan data ke database
         $news = News::create([
-            'name' => $validated['name'],
+            'title' => $validated['title'],
             'image' => $imagePath,
             'deskripsi' => $validated['deskripsi'],
+            'author' => $validated['author'],
         ]);
-    
+
         return response()->json([
             'message' => 'News created successfully!',
             'news' => $news,
         ], 201);
     }
-    
-    // Menampilkan detail berita
+
+    // Menampilkan detail berita berdasarkan ID
     public function show($id)
     {
         $news = News::find($id);
@@ -56,7 +56,10 @@ class NewsController extends Controller
             return response()->json(['error' => 'News not found'], 404);
         }
 
-        return response()->json($news, 200);
+        return response()->json([
+            'data' => $news,
+            'message' => 'News detail fetched successfully',
+        ], 200);
     }
 
     // Memperbarui berita
@@ -68,12 +71,15 @@ class NewsController extends Controller
             return response()->json(['error' => 'News not found'], 404);
         }
 
+        // Validasi input
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'title' => 'required|string|max:255',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
             'deskripsi' => 'required|string',
+            'author' => 'required|string|max:255',
         ]);
 
+        // Jika ada file baru, hapus file lama dan simpan file baru
         if ($request->hasFile('image')) {
             if ($news->image && Storage::disk('public')->exists($news->image)) {
                 Storage::disk('public')->delete($news->image);
@@ -82,9 +88,11 @@ class NewsController extends Controller
             $news->image = $imagePath;
         }
 
+        // Perbarui data lainnya
         $news->update([
-            'name' => $validated['name'],
+            'title' => $validated['title'],
             'deskripsi' => $validated['deskripsi'],
+            'author' => $validated['author'],
         ]);
 
         return response()->json([
@@ -102,12 +110,13 @@ class NewsController extends Controller
             return response()->json(['error' => 'News not found'], 404);
         }
 
+        // Hapus file gambar jika ada
         if ($news->image && Storage::disk('public')->exists($news->image)) {
             Storage::disk('public')->delete($news->image);
         }
 
         $news->delete();
 
-        return response()->json(['message' => 'News deleted successfully'], 204);
+        return response()->json(['message' => 'News deleted successfully'], 200);
     }
 }
