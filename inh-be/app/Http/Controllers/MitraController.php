@@ -8,16 +8,23 @@ use Illuminate\Support\Facades\Storage;
 
 class MitraController extends Controller
 {
-    
+    // Menampilkan semua mitra
     public function index()
-{
-    $mitra = mitra::all();
+    {
+        $mitra = Mitra::all();
 
-    return response()->json([
-        'data' => $mitra,  
-        'message' => 'Data mitra fetched successfully', 
-    ], 200);
-}
+        if ($mitra->isEmpty()) {
+            return response()->json([
+                'message' => 'No mitra data found',
+                'data' => []
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Data mitra fetched successfully',
+            'data' => $mitra,
+        ], 200);
+    }
 
     // Menyimpan mitra baru
     public function store(Request $request)
@@ -27,32 +34,42 @@ class MitraController extends Controller
             'name' => 'required|string|max:255',
             'image' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
-    
-        // Simpan file gambar ke penyimpanan publik
-        $imagePath = $request->file('image')->store('mitra_images', 'public');
-    
-        // Simpan data ke database
-        $mitra = Mitra::create([
-            'name' => $validated['name'],
-            'image' => $imagePath,
-        ]);
-    
-        return response()->json([
-            'message' => 'Mitra created successfully!',
-            'mitra' => $mitra,
-        ], 201);
+
+        try {
+            // Simpan file gambar ke penyimpanan publik
+            $imagePath = $request->file('image')->store('mitra_images', 'public');
+
+            // Simpan data ke database
+            $mitra = Mitra::create([
+                'name' => $validated['name'],
+                'image' => $imagePath,
+            ]);
+
+            return response()->json([
+                'message' => 'Mitra created successfully!',
+                'mitra' => $mitra,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to create mitra',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
-    
+
     // Menampilkan detail mitra
     public function show($id)
     {
         $mitra = Mitra::find($id);
 
         if (!$mitra) {
-            return response()->json(['error' => 'Mitra not found'], 404);
+            return response()->json(['message' => 'Mitra not found'], 404);
         }
 
-        return response()->json($mitra, 200);
+        return response()->json([
+            'message' => 'Mitra fetched successfully',
+            'data' => $mitra,
+        ], 200);
     }
 
     // Memperbarui mitra
@@ -61,7 +78,7 @@ class MitraController extends Controller
         $mitra = Mitra::find($id);
 
         if (!$mitra) {
-            return response()->json(['error' => 'Mitra not found'], 404);
+            return response()->json(['message' => 'Mitra not found'], 404);
         }
 
         $validated = $request->validate([
@@ -69,22 +86,29 @@ class MitraController extends Controller
             'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
-        if ($request->hasFile('image')) {
-            if ($mitra->image && Storage::disk('public')->exists($mitra->image)) {
-                Storage::disk('public')->delete($mitra->image);
+        try {
+            if ($request->hasFile('image')) {
+                if ($mitra->image && Storage::disk('public')->exists($mitra->image)) {
+                    Storage::disk('public')->delete($mitra->image);
+                }
+                $imagePath = $request->file('image')->store('mitra_images', 'public');
+                $mitra->image = $imagePath;
             }
-            $imagePath = $request->file('image')->store('mitra_images', 'public');
-            $mitra->image = $imagePath;
+
+            $mitra->update([
+                'name' => $validated['name'],
+            ]);
+
+            return response()->json([
+                'message' => 'Mitra updated successfully!',
+                'mitra' => $mitra,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to update mitra',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        $mitra->update([
-            'name' => $validated['name'],
-        ]);
-
-        return response()->json([
-            'message' => 'Mitra updated successfully!',
-            'mitra' => $mitra,
-        ], 200);
     }
 
     // Menghapus mitra
@@ -93,15 +117,22 @@ class MitraController extends Controller
         $mitra = Mitra::find($id);
 
         if (!$mitra) {
-            return response()->json(['error' => 'Mitra not found'], 404);
+            return response()->json(['message' => 'Mitra not found'], 404);
         }
 
-        if ($mitra->image && Storage::disk('public')->exists($mitra->image)) {
-            Storage::disk('public')->delete($mitra->image);
+        try {
+            if ($mitra->image && Storage::disk('public')->exists($mitra->image)) {
+                Storage::disk('public')->delete($mitra->image);
+            }
+
+            $mitra->delete();
+
+            return response()->json(['message' => 'Mitra deleted successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to delete mitra',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        $mitra->delete();
-
-        return response()->json(['message' => 'Mitra deleted successfully'], 204);
     }
 }

@@ -26,7 +26,6 @@ Route::get('/lembaga_kerjasama', [LembagaKerjasamaController::class, 'index']);
 Route::get('/lembaga_kerjasama/{id}', [LembagaKerjasamaController::class, 'show']);
 Route::get('/news', [NewsController::class, 'index']);
 Route::get('/news/{id}', [NewsController::class, 'show']);
-Route::get('/kategory', [KategoryController::class, 'index'])->name('kategory.index');
 Route::get('/pengumuman', [PengumumanController::class, 'index'])->name('pengumuman.index');
 Route::get('/distribusi-program', [DistribusiProgramController::class, 'index'])->name('distribusi-program.index');
 
@@ -38,8 +37,8 @@ Route::get('/distribusi-program', [DistribusiProgramController::class, 'index'])
     Route::delete('/campaign/{id}', [CampaignController::class, 'destroy']);
 
     Route::post('/mitra', [MitraController::class, 'store']);
-    Route::put('/mitra/{id}', [MitraController::class, 'update']);
     Route::delete('/mitra/{id}', [MitraController::class, 'destroy']);
+    Route::put('/mitra/{id}', [MitraController::class, 'update']);
 
     Route::post('/lembaga_kerjasama', [LembagaKerjasamaController::class, 'store']);
     Route::put('/lembaga_kerjasama/{id}', [LembagaKerjasamaController::class, 'update']);
@@ -49,16 +48,11 @@ Route::get('/distribusi-program', [DistribusiProgramController::class, 'index'])
     Route::put('/news/{id}', [NewsController::class, 'update']);
     Route::delete('/news/{id}', [NewsController::class, 'destroy']);
 
-    // Kategory Routes
-    Route::get('/kategory/create', [KategoryController::class, 'create'])->name('kategory.create');
-    Route::post('/kategory', [KategoryController::class, 'store'])->name('kategory.store');
-    Route::get('/kategory/{id}', [KategoryController::class, 'show'])->name('kategory.show');
-    Route::get('/kategory/{id}/edit', [KategoryController::class, 'edit'])->name('kategory.edit');
-    Route::put('/kategory/{id}', [KategoryController::class, 'update'])->name('kategory.update');
-    Route::delete('/kategory/{id}', [KategoryController::class, 'destroy'])->name('kategory.destroy');
+    
 
     // Pengumuman Routes
     Route::post('/pengumuman', [PengumumanController::class, 'store'])->name('pengumuman.store');
+    Route::put('/pengumuman/{id}', [PengumumanController::class, 'update'])->name('pengumuman.update');
     Route::get('/pengumuman/{id}', [PengumumanController::class, 'show'])->name('pengumuman.show');
     Route::delete('/pengumuman/{id}', [PengumumanController::class, 'destroy'])->name('pengumuman.destroy');
 

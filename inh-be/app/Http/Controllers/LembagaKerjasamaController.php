@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\LembagaKerjasama;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class LembagaKerjasamaController extends Controller
 {
@@ -11,50 +12,86 @@ class LembagaKerjasamaController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-{
-    // Mengambil semua data lembaga kerjasama
-    $lembagaKerjasama = LembagaKerjasama::all();
+    {
+        try {
+            // Mengambil semua data lembaga kerjasama
+            $lembagaKerjasama = LembagaKerjasama::all();
 
-    // Mengembalikan data dalam bentuk JSON dengan status 200
-    return response()->json([
-        'data' => $lembagaKerjasama,
-        'message' => 'Lembaga Kerjasama retrieved successfully',
-    ], 200);
-}
-
+            return response()->json([
+                'data' => $lembagaKerjasama,
+                'message' => 'Lembaga Kerjasama retrieved successfully',
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response()->json([
+                'message' => 'Failed to retrieve Lembaga Kerjasama',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, LembagaKerjasama $lembagaKerjasama)
     {
-        // Validasi input
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'image' => 'required|image|mimes:jpg,jpeg,png,gif|max:2048',
-        ]);
-
-        // Simpan file gambar ke penyimpanan publik
-        $imagePath = $request->file('image')->store('lembaga_kerjasama_images', 'public');
-
-        // Simpan data ke database
-        $lembagaKerjasama = LembagaKerjasama::create([
-            'name' => $validated['name'],
-            'image' => $imagePath,
-        ]);
-
-        return response()->json([
-            'message' => 'Lembaga Kerjasama created successfully!',
-            'lembagaKerjasama' => $lembagaKerjasama,
-        ], 201);
+        try {
+            // Validasi input
+            $validated = $request->validate([
+                'name' => 'sometimes|required|string|max:255',
+                'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+            ]);
+    
+            // Update kolom yang ada di request
+            if ($request->has('name')) {
+                $lembagaKerjasama->name = $validated['name'];
+            }
+    
+            if ($request->hasFile('image')) {
+                // Hapus gambar lama jika ada
+                if ($lembagaKerjasama->image && file_exists(public_path('storage/' . $lembagaKerjasama->image))) {
+                    unlink(public_path('storage/' . $lembagaKerjasama->image));
+                }
+    
+                // Simpan gambar baru
+                $imagePath = $request->file('image')->store('lembaga_kerjasama_images', 'public');
+                $lembagaKerjasama->image = $imagePath;
+            }
+    
+            // Simpan perubahan
+            $lembagaKerjasama->save();
+    
+            return response()->json([
+                'message' => 'Lembaga Kerjasama updated successfully!',
+                'lembagaKerjasama' => $lembagaKerjasama,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to update Lembaga Kerjasama',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
+    
+    
 
     /**
      * Display the specified resource.
      */
     public function show(LembagaKerjasama $lembagaKerjasama)
     {
-        return response()->json($lembagaKerjasama);
+        try {
+            return response()->json([
+                'data' => $lembagaKerjasama,
+                'message' => 'Lembaga Kerjasama retrieved successfully',
+            ]);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response()->json([
+                'message' => 'Failed to retrieve Lembaga Kerjasama',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
@@ -62,34 +99,42 @@ class LembagaKerjasamaController extends Controller
      */
     public function update(Request $request, LembagaKerjasama $lembagaKerjasama)
     {
-        // Validasi input
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-        ]);
+        try {
+            // Validasi input
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+            ]);
 
-        // Update nama
-        $lembagaKerjasama->name = $validated['name'];
+            // Update nama
+            $lembagaKerjasama->name = $validated['name'];
 
-        // Jika ada gambar baru
-        if ($request->hasFile('image')) {
-            // Hapus gambar lama
-            if (file_exists(public_path('storage/' . $lembagaKerjasama->image))) {
-                unlink(public_path('storage/' . $lembagaKerjasama->image));
+            // Jika ada gambar baru
+            if ($request->hasFile('image')) {
+                // Hapus gambar lama
+                if (file_exists(public_path('storage/' . $lembagaKerjasama->image))) {
+                    unlink(public_path('storage/' . $lembagaKerjasama->image));
+                }
+
+                // Simpan file gambar ke penyimpanan publik
+                $imagePath = $request->file('image')->store('lembaga_kerjasama_images', 'public');
+                $lembagaKerjasama->image = $imagePath;
             }
 
-            // Simpan file gambar ke penyimpanan publik
-            $imagePath = $request->file('image')->store('lembaga_kerjasama_images', 'public');
-            $lembagaKerjasama->image = $imagePath;
+            // Simpan perubahan
+            $lembagaKerjasama->save();
+
+            return response()->json([
+                'message' => 'Lembaga Kerjasama updated successfully!',
+                'lembagaKerjasama' => $lembagaKerjasama,
+            ]);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response()->json([
+                'message' => 'Failed to update Lembaga Kerjasama',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        // Simpan perubahan
-        $lembagaKerjasama->save();
-
-        return response()->json([
-            'message' => 'Lembaga Kerjasama updated successfully!',
-            'lembagaKerjasama' => $lembagaKerjasama,
-        ]);
     }
 
     /**
@@ -97,16 +142,24 @@ class LembagaKerjasamaController extends Controller
      */
     public function destroy(LembagaKerjasama $lembagaKerjasama)
     {
-        // Hapus gambar jika ada
-        if (file_exists(public_path('storage/' . $lembagaKerjasama->image))) {
-            unlink(public_path('storage/' . $lembagaKerjasama->image));
+        try {
+            // Hapus gambar jika ada
+            if (file_exists(public_path('storage/' . $lembagaKerjasama->image))) {
+                unlink(public_path('storage/' . $lembagaKerjasama->image));
+            }
+
+            // Hapus data dari database
+            $lembagaKerjasama->delete();
+
+            return response()->json([
+                'message' => 'Lembaga Kerjasama deleted successfully!',
+            ]);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response()->json([
+                'message' => 'Failed to delete Lembaga Kerjasama',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        // Hapus data dari database
-        $lembagaKerjasama->delete();
-
-        return response()->json([
-            'message' => 'Lembaga Kerjasama deleted successfully!',
-        ]);
     }
 }
