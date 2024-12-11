@@ -30,7 +30,6 @@ class DistribusiProgramController extends Controller
     public function store(Request $request)
     {
         try {
-            // Validasi input
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
                 'deskripsi' => 'nullable|string',
@@ -38,12 +37,10 @@ class DistribusiProgramController extends Controller
                 'author' => 'required|string|max:255',
             ]);
 
-            // Proses file gambar
             $imagePath = $request->hasFile('image') 
                 ? $request->file('image')->store('distribusi_program_images', 'public') 
                 : null;
 
-            // Simpan data ke database
             $program = DistribusiProgram::create([
                 'title' => $validated['title'],
                 'deskripsi' => $validated['deskripsi'],
@@ -73,7 +70,10 @@ class DistribusiProgramController extends Controller
                 return response()->json(['error' => 'Distribusi program not found'], 404);
             }
 
-            return response()->json($program, 200);
+            return response()->json([
+                'data' => $program,
+                'message' => 'Distribusi program fetched successfully',
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to fetch distribusi program detail',
@@ -82,74 +82,58 @@ class DistribusiProgramController extends Controller
         }
     }
 
-   // Memperbarui data
-   public function update(Request $request, $id)
-   {
-       try {
-           // Cari program berdasarkan ID
-           $program = DistribusiProgram::find($id);
-   
-           if (!$program) {
-               return response()->json(['error' => 'Distribusi program not found'], 404);
-           }
-   
-           // Validasi input
-           $validated = $request->validate([
-               'title' => 'nullable|string|max:255',
-               'deskripsi' => 'nullable|string',
-               'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-               'author' => 'nullable|string|max:255',
-           ]);
-   
-           // Periksa apakah ada perubahan pada 'title', 'author', atau 'deskripsi'
-           $dataToUpdate = [];
-   
-           if ($request->has('title')) {
-               $dataToUpdate['title'] = $validated['title'];
-           }
-   
-           if ($request->has('deskripsi')) {
-               $dataToUpdate['deskripsi'] = $validated['deskripsi'];
-           }
-   
-           if ($request->has('author')) {
-               $dataToUpdate['author'] = $validated['author'];
-           }
-   
-           // Proses file gambar jika ada
-           if ($request->hasFile('image')) {
-               // Hapus gambar lama jika ada
-               if ($program->image && Storage::disk('public')->exists($program->image)) {
-                   Storage::disk('public')->delete($program->image);
-               }
-               // Simpan gambar baru
-               $imagePath = $request->file('image')->store('distribusi_program_images', 'public');
-               $dataToUpdate['image'] = $imagePath;
-           }
-   
-           // Update data jika ada perubahan
-           if (count($dataToUpdate) > 0) {
-               $program->update($dataToUpdate);
-   
-               return response()->json([
-                   'message' => 'Distribusi program updated successfully!',
-                   'program' => $program,
-               ], 200);
-           } else {
-               return response()->json([
-                   'message' => 'No changes made to the distribusi program.',
-               ], 200);
-           }
-   
-       } catch (\Exception $e) {
-           return response()->json([
-               'error' => 'Failed to update distribusi program',
-               'message' => $e->getMessage(),
-           ], 500);
-       }
-   }
-   
+    // Memperbarui data
+    public function update(Request $request, $id)
+    {
+        try {
+            $program = DistribusiProgram::find($id);
 
+            if (!$program) {
+                return response()->json(['error' => 'Distribusi program not found'], 404);
+            }
+
+            $validated = $request->validate([
+                'title' => 'nullable|string|max:255',
+                'deskripsi' => 'nullable|string',
+                'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+                'author' => 'nullable|string|max:255',
+            ]);
+
+            // Hanya perbarui field yang dikirimkan
+            if ($request->has('title')) {
+                $program->title = $validated['title'];
+            }
+
+            if ($request->has('deskripsi')) {
+                $program->deskripsi = $validated['deskripsi'];
+            }
+
+            if ($request->has('author')) {
+                $program->author = $validated['author'];
+            }
+
+            // Perbarui gambar jika ada
+            if ($request->hasFile('image')) {
+                if ($program->image && Storage::disk('public')->exists($program->image)) {
+                    Storage::disk('public')->delete($program->image);
+                }
+
+                $program->image = $request->file('image')->store('distribusi_program_images', 'public');
+            }
+
+            $program->save();
+
+            return response()->json([
+                'message' => 'Distribusi program updated successfully!',
+                'program' => $program,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to update distribusi program',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
 
     // Menghapus data
     public function destroy($id)
@@ -161,15 +145,15 @@ class DistribusiProgramController extends Controller
                 return response()->json(['error' => 'Distribusi program not found'], 404);
             }
 
-            // Hapus gambar jika ada
             if ($program->image && Storage::disk('public')->exists($program->image)) {
                 Storage::disk('public')->delete($program->image);
             }
 
-            // Hapus data program
             $program->delete();
 
-            return response()->json(['message' => 'Distribusi program deleted successfully'], 204);
+            return response()->json([
+                'message' => 'Distribusi program deleted successfully',
+            ], 204);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to delete distribusi program',

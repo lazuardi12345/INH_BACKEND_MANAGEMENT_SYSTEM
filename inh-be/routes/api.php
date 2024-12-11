@@ -10,7 +10,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\KategoryController;
 use App\Http\Controllers\PengumumanController;
 use App\Http\Controllers\DistribusiProgramController;
-
+use App\Http\Controllers\PaymentController;
 
 // Rute pengguna yang memerlukan autentikasi
 Route::get('/user', function (Request $request) {
@@ -66,3 +66,7 @@ Route::get('/distribusi-program', [DistribusiProgramController::class, 'index'])
 // Rute untuk login dan register (terbuka tanpa autentikasi)
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+
+
+
+Route::post('/payment', [PaymentController::class, 'createPayment']);
